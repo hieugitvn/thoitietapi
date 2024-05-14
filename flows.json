@@ -1,0 +1,61 @@
+[
+    {
+        "id": "352cde8c22860bdb",
+        "type": "MSSQL",
+        "z": "adb90777e5b31bf1",
+        "mssqlCN": "c1b4fb13714e8e0d",
+        "name": "",
+        "outField": "payload",
+        "returnType": 0,
+        "throwErrors": 1,
+        "query": "SP_weather",
+        "modeOpt": "",
+        "modeOptType": "execute",
+        "queryOpt": "payload",
+        "queryOptType": "editor",
+        "paramsOpt": "",
+        "paramsOptType": "editor",
+        "rows": "rows",
+        "rowsType": "msg",
+        "parseMustache": true,
+        "params": [
+            {
+                "output": false,
+                "name": "param1",
+                "type": "int",
+                "valueType": "num",
+                "value": "0",
+                "options": {
+                    "nullable": true,
+                    "primary": false,
+                    "identity": false,
+                    "readOnly": false
+                }
+            }
+        ],
+        "x": 540,
+        "y": 180,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "c1b4fb13714e8e0d",
+        "type": "MSSQL-CN",
+        "tdsVersion": "7_4",
+        "name": "hi",
+        "server": "AFF\\HI",
+        "port": "1443",
+        "encyption": true,
+        "trustServerCertificate": true,
+        "database": "Weather",
+        "useUTC": true,
+        "connectTimeout": "15000",
+        "requestTimeout": "15000",
+        "cancelTimeout": "5000",
+        "pool": "5",
+        "parseJSON": false,
+        "enableArithAbort": true,
+        "readOnlyIntent": false
+    }
+]
