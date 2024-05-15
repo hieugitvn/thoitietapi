@@ -1,39 +1,26 @@
-from fastapi import FastAPI, HTTPException, Query
 import requests
-from unidecode import unidecode
-import json
+from fastapi import FastAPI
 
 app = FastAPI()
 
-def call_api(city: str, api_key: str):
-    try:
-        city = unidecode(city)
-        url = f'https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}'
-        response = requests.get(url)
-        if response.status_code == 200:
-            return response.json()
-        else:
-            raise HTTPException(status_code=response.status_code, detail=response.text)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+# Khai báo API key của OpenWeatherMap
+API_KEY = "e06657dd707b4bd0e3ad3b032ceb9a33"
 
-@app.get("/weather/")
-async def get_weather(city: str = Query(...), api_key: str = "e19e78b40afb3f90ff01b81d342fd1a5"):
-    try:
-        data = call_api(city, api_key)
-        humidity = data['main']['humidity']
-        pressure = data['main']['pressure']
-        wind = data['wind']['speed']
-        description = data['weather'][0]['description']
-        temp = data['main']['temp']
-        
-        return {
-            "city": city,
-            "temperature": temp,
-            "pressure": pressure,
-            "humidity": humidity,
-            "wind_speed": wind,
-            "description": description
-        }
-    except Exception as e:
-        raise HTTPException(status_code=404, detail=str(e))
+@app.get("/")
+async def read_data():
+    # Gửi yêu cầu GET đến API của OpenWeatherMap
+    city = "Bac Giang"  # Thành phố bạn muốn lấy dữ liệu
+    url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}"
+    response = requests.get(url)
+    
+    if response.status_code == 200:
+        # Lấy dữ liệu từ phản hồi JSON
+        data = response.json()
+        # Trích xuất nhiệt độ và độ ẩm từ dữ liệu
+        temperature = data["main"]["temp"]
+        humidity = data["main"]["humidity"]
+        # Trả về dữ liệu
+        return {"temperature": temperature, "humidity": humidity}
+    else:
+        # Trả về lỗi nếu không thể lấy dữ liệu
+        return {"error": "Failed to fetch data from OpenWeatherMap API"}

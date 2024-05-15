@@ -1,37 +1,154 @@
-USE [Weather]
+USE [master]
 GO
-/****** Object:  Table [dbo].[weather]    Script Date: 14/05/2024 9:48:07 CH ******/
+/****** Object:  Database [ok]    Script Date: 16/05/2024 12:24:02 SA ******/
+CREATE DATABASE [ok]
+ CONTAINMENT = NONE
+ ON  PRIMARY 
+( NAME = N'chuchua', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL16.HIU\MSSQL\DATA\chuchua.mdf' , SIZE = 8192KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB )
+ LOG ON 
+( NAME = N'chuchua_log', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL16.HIU\MSSQL\DATA\chuchua_log.ldf' , SIZE = 8192KB , MAXSIZE = 2048GB , FILEGROWTH = 65536KB )
+ WITH CATALOG_COLLATION = DATABASE_DEFAULT, LEDGER = OFF
+GO
+ALTER DATABASE [ok] SET COMPATIBILITY_LEVEL = 160
+GO
+IF (1 = FULLTEXTSERVICEPROPERTY('IsFullTextInstalled'))
+begin
+EXEC [ok].[dbo].[sp_fulltext_database] @action = 'enable'
+end
+GO
+ALTER DATABASE [ok] SET ANSI_NULL_DEFAULT OFF 
+GO
+ALTER DATABASE [ok] SET ANSI_NULLS OFF 
+GO
+ALTER DATABASE [ok] SET ANSI_PADDING OFF 
+GO
+ALTER DATABASE [ok] SET ANSI_WARNINGS OFF 
+GO
+ALTER DATABASE [ok] SET ARITHABORT OFF 
+GO
+ALTER DATABASE [ok] SET AUTO_CLOSE OFF 
+GO
+ALTER DATABASE [ok] SET AUTO_SHRINK OFF 
+GO
+ALTER DATABASE [ok] SET AUTO_UPDATE_STATISTICS ON 
+GO
+ALTER DATABASE [ok] SET CURSOR_CLOSE_ON_COMMIT OFF 
+GO
+ALTER DATABASE [ok] SET CURSOR_DEFAULT  GLOBAL 
+GO
+ALTER DATABASE [ok] SET CONCAT_NULL_YIELDS_NULL OFF 
+GO
+ALTER DATABASE [ok] SET NUMERIC_ROUNDABORT OFF 
+GO
+ALTER DATABASE [ok] SET QUOTED_IDENTIFIER OFF 
+GO
+ALTER DATABASE [ok] SET RECURSIVE_TRIGGERS OFF 
+GO
+ALTER DATABASE [ok] SET  DISABLE_BROKER 
+GO
+ALTER DATABASE [ok] SET AUTO_UPDATE_STATISTICS_ASYNC OFF 
+GO
+ALTER DATABASE [ok] SET DATE_CORRELATION_OPTIMIZATION OFF 
+GO
+ALTER DATABASE [ok] SET TRUSTWORTHY OFF 
+GO
+ALTER DATABASE [ok] SET ALLOW_SNAPSHOT_ISOLATION OFF 
+GO
+ALTER DATABASE [ok] SET PARAMETERIZATION SIMPLE 
+GO
+ALTER DATABASE [ok] SET READ_COMMITTED_SNAPSHOT OFF 
+GO
+ALTER DATABASE [ok] SET HONOR_BROKER_PRIORITY OFF 
+GO
+ALTER DATABASE [ok] SET RECOVERY SIMPLE 
+GO
+ALTER DATABASE [ok] SET  MULTI_USER 
+GO
+ALTER DATABASE [ok] SET PAGE_VERIFY CHECKSUM  
+GO
+ALTER DATABASE [ok] SET DB_CHAINING OFF 
+GO
+ALTER DATABASE [ok] SET FILESTREAM( NON_TRANSACTED_ACCESS = OFF ) 
+GO
+ALTER DATABASE [ok] SET TARGET_RECOVERY_TIME = 60 SECONDS 
+GO
+ALTER DATABASE [ok] SET DELAYED_DURABILITY = DISABLED 
+GO
+ALTER DATABASE [ok] SET ACCELERATED_DATABASE_RECOVERY = OFF  
+GO
+ALTER DATABASE [ok] SET QUERY_STORE = ON
+GO
+ALTER DATABASE [ok] SET QUERY_STORE (OPERATION_MODE = READ_WRITE, CLEANUP_POLICY = (STALE_QUERY_THRESHOLD_DAYS = 30), DATA_FLUSH_INTERVAL_SECONDS = 900, INTERVAL_LENGTH_MINUTES = 60, MAX_STORAGE_SIZE_MB = 1000, QUERY_CAPTURE_MODE = AUTO, SIZE_BASED_CLEANUP_MODE = AUTO, MAX_PLANS_PER_QUERY = 200, WAIT_STATS_CAPTURE_MODE = ON)
+GO
+USE [ok]
+GO
+/****** Object:  Table [dbo].[history]    Script Date: 16/05/2024 12:24:02 SA ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-CREATE TABLE [dbo].[weather](
-	[city] [nchar](10) NULL,
-	[temperature] [nchar](10) NULL,
-	[pressure] [nchar](10) NULL,
-	[humidity] [nchar](10) NULL,
-	[wind_speed] [nchar](10) NULL,
-	[description] [nchar](10) NULL
+CREATE TABLE [dbo].[history](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[sid] [int] NOT NULL,
+	[value] [decimal](18, 0) NULL,
+	[time] [datetime] NULL,
+ CONSTRAINT [PK_history] PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  StoredProcedure [dbo].[SP_weather]    Script Date: 14/05/2024 9:48:07 CH ******/
+/****** Object:  Table [dbo].[sensor]    Script Date: 16/05/2024 12:24:02 SA ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-CREATE PROCEDURE [dbo].[SP_weather]
-    @city NVARCHAR(50),
-    @temperature DECIMAL(18,2),
-    @pressure INT,
-    @humidity INT,
-    @wind_speed DECIMAL(18,2),
-    @description NVARCHAR(100)
+CREATE TABLE [dbo].[sensor](
+	[sid] [int] NOT NULL,
+	[name] [nchar](10) NULL,
+	[unit] [nchar](10) NULL,
+	[value] [numeric](18, 0) NULL,
+	[time] [datetime] NULL,
+ CONSTRAINT [PK_sensor] PRIMARY KEY CLUSTERED 
+(
+	[sid] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+ALTER TABLE [dbo].[history] ADD  CONSTRAINT [DF_history_time]  DEFAULT (getdate()) FOR [time]
+GO
+ALTER TABLE [dbo].[sensor] ADD  CONSTRAINT [DF_sensor_time]  DEFAULT (getdate()) FOR [time]
+GO
+ALTER TABLE [dbo].[history]  WITH CHECK ADD  CONSTRAINT [FK_history_sensor] FOREIGN KEY([sid])
+REFERENCES [dbo].[sensor] ([sid])
+GO
+ALTER TABLE [dbo].[history] CHECK CONSTRAINT [FK_history_sensor]
+GO
+/****** Object:  StoredProcedure [dbo].[SP_Chart]    Script Date: 16/05/2024 12:24:02 SA ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE [dbo].[SP_Chart]
 AS
 BEGIN
-    DECLARE @json NVARCHAR(MAX);
+    DECLARE @json nvarchar(max) = N'{"ok":1,"msg":"ok","data":[';
 
-    SET @json = N'{"city":"' + @city + '","temperature":' + CONVERT(NVARCHAR(50), @temperature) + ',"pressure":' + CONVERT(NVARCHAR(50), @pressure) + ',"humidity":' + CONVERT(NVARCHAR(50), @humidity) + ',"wind_speed":' + CONVERT(NVARCHAR(50), @wind_speed) + ',"description":"' + @description + '"}';
+    SELECT @json += FORMATMESSAGE(N'{"id":"%d","sid":"%d","value":"%s","time":"%s"},',
+                              [id], [sid], CONVERT(nvarchar(50), [value]), CONVERT(nvarchar(50), [time]))
+    FROM history;
+
+    IF RIGHT(@json, 1) = ','
+    BEGIN
+        SET @json = LEFT(@json, LEN(@json) - 1);
+    END
+
+    SET @json = @json + ']}';
 
     SELECT @json AS json;
-END;
+END
+GO
+USE [master]
+GO
+ALTER DATABASE [ok] SET  READ_WRITE 
 GO
